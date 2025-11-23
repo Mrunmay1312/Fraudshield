@@ -1,4 +1,14 @@
-FROM quay.io/quarkus/quarkus-micro-image:3.3.0.Final
-COPY target/*-runner /work/application
+FROM registry.access.redhat.com/ubi8/openjdk-17-runtime:1.17
+
+WORKDIR /app
+
+# Copy Quarkus app structure
+COPY target/quarkus-app/lib/ /app/lib/
+COPY target/quarkus-app/app/ /app/app/
+COPY target/quarkus-app/quarkus/ /app/quarkus/
+COPY target/quarkus-app/quarkus-run.jar /app/
+
 EXPOSE 8080
-CMD ["/work/application","-Dquarkus.http.host=0.0.0.0"]
+
+CMD ["java", "-jar", "/app/quarkus-run.jar"]
+

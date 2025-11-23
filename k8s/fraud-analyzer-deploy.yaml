@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: fraud-analyzer
-        image: REPLACE_IMAGE
+        image: mrunmay1312/dissertation-fraud-analyzer:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8001

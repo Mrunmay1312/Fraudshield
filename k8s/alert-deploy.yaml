@@ -15,6 +15,6 @@ spec:
     spec:
       containers:
       - name: alert-service
-        image: REPLACE_IMAGE
+        image: mrunmay1312/dissertation-alert-service:latest
         ports:
         - containerPort: 3000

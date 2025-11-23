@@ -15,6 +15,6 @@ spec:
     spec:
       containers:
       - name: rule-engine
-        image: REPLACE_IMAGE
+        image: mrunmay1312/dissertation-rule-engine:latest
         ports:
         - containerPort: 8080

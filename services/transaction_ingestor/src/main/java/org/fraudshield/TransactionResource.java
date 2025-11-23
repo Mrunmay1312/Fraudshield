@@ -1,34 +1,44 @@
 package org.fraudshield;
 
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.core.MediaType;
-import org.apache.kafka.clients.producer.*;
-import java.util.Properties;
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.annotation.PostConstruct;
+
+@Path("/transactions")
 @ApplicationScoped
-@Path("/ingest")
 public class TransactionResource {
 
-    private Producer<String, String> producer;
-
     @PostConstruct
-    public void init() {
-        Properties props = new Properties();
-        props.put("bootstrap.servers", System.getenv().getOrDefault("KAFKA_BOOTSTRAP", "kafka:9092"));
-        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        producer = new KafkaProducer<>(props);
+    void init() {
+        // Initialization logic if needed
+        System.out.println("TransactionResource initialized");
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getSampleTransaction() {
+        // Example response
+        String sample = "{ \"id\": 1, \"amount\": 100.0, \"status\": \"OK\" }";
+        return Response.ok(sample).build();
     }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public String ingest(String payload) {
-        ProducerRecord<String, String> rec = new ProducerRecord<>("transactions", null, payload);
-        producer.send(rec);
-        return "{\"status\":\"sent\"}";
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response ingestTransaction(String transactionJson) {
+        // TODO: Process transaction and push to Kafka
+        System.out.println("Received transaction: " + transactionJson);
+
+        // Return acknowledgement
+        String response = "{ \"status\": \"received\" }";
+        return Response.ok(response).build();
     }
 }
+
