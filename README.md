@@ -1,4 +1,4 @@
-# Dissertation POC (FraudShield) - Option B (POC-ready)
+# Dissertation POC (FraudShield) - (POC-ready)
 
 This archive is a Proof-Of-Concept "POC-ready" project for *FraudShield*.
 It includes key microservices, Kubernetes manifests, Strimzi Kafka CRs, a Kubeflow pipeline example,
