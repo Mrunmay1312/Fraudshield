@@ -1,0 +1,23 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaNodePool
+metadata:
+  name: fraudshield-brokers
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: fraudshield-cluster
+spec:
+  replicas: 3
+  roles:
+    - broker
+    - controller
+
+  storage:
+    type: persistent-claim
+    size: 20Gi
+    deleteClaim: false
+
+  listeners:
+    - name: plain
+      port: 9092
+      type: internal
+      tls: false

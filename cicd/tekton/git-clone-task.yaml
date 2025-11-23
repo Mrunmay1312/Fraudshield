@@ -1,0 +1,20 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: git-clone
+spec:
+  params:
+    - name: url
+      type: string
+    - name: revision
+      type: string
+      default: main
+  resources:
+    outputs:
+      - name: workspace
+        type: git
+  steps:
+    - name: clone
+      image: alpine/git
+      script: |
+        git clone $(params.url) -b $(params.revision) $(resources.outputs.workspace.path)

@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transaction-ingestor
+  namespace: fraudshield
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transaction-ingestor
+  template:
+    metadata:
+      labels:
+        app: transaction-ingestor
+    spec:
+      containers:
+      - name: transaction-ingestor
+        image: REPLACE_IMAGE
+        ports:
+        - containerPort: 8080
+        env:
+        - name: KAFKA_BOOTSTRAP
+          value: kafka:9092

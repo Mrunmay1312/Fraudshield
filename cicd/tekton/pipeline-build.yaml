@@ -1,0 +1,25 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: build-and-deploy
+spec:
+  params:
+    - name: registry
+      type: string
+    - name: org
+      type: string
+    - name: tag
+      type: string
+  tasks:
+    - name: clone
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: https://github.com/your/repo.git
+    - name: build-analyzer
+      taskRef:
+        name: buildah-build
+      params:
+        - name: IMAGE
+          value: $(params.registry)/$(params.org)/dissertation-fraud-analyzer:$(params.tag)

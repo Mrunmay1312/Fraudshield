@@ -1,0 +1,19 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: fraudshield-cluster
+  namespace: kafka
+spec:
+  kafka:
+    version: 4.1.1
+
+    config:
+      process.roles: "broker,controller"
+      controller.quorum.voters: "0@fraudshield-brokers-0.fraudshield-brokers.kafka.svc:9093,1@fraudshield-brokers-1.fraudshield-brokers.kafka.svc:9093,2@fraudshield-brokers-2.fraudshield-brokers.kafka.svc:9093"
+      inter.broker.listener.name: "INTERNAL"
+
+    listeners:
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false

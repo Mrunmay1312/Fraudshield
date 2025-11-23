@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fraud-analyzer
+  namespace: fraudshield
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fraud-analyzer
+  template:
+    metadata:
+      labels:
+        app: fraud-analyzer
+    spec:
+      containers:
+      - name: fraud-analyzer
+        image: REPLACE_IMAGE
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8001
+        env:
+        - name: MODEL_PATH
+          value: /app/model.joblib
