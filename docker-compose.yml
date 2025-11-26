@@ -1,9 +1,9 @@
 version: "3.9"
 
 services:
-  # ------------------------
-  # Kafka stack
-  # ------------------------
+  # -------------------------------------
+  # Zookeeper
+  # -------------------------------------
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     environment:
@@ -11,6 +11,9 @@ services:
     ports:
       - "2181:2181"
 
+  # -------------------------------------
+  # Kafka
+  # -------------------------------------
   kafka:
     image: confluentinc/cp-kafka:7.5.0
     depends_on:
@@ -24,9 +27,9 @@ services:
     ports:
       - "9094:9094"
 
-  # ------------------------
-  # MinIO for artifacts
-  # ------------------------
+  # -------------------------------------
+  # MinIO (ML models, datasets, artifacts)
+  # -------------------------------------
   minio:
     image: minio/minio
     command: server /data --console-address ":9001"
@@ -39,16 +42,58 @@ services:
     volumes:
       - minio_data:/data
 
-  # ------------------------
-  # Monitoring stack
-  # ------------------------
+  # -------------------------------------
+  # Kubeflow Pipelines API Server (v1.10)
+  # -------------------------------------
+  ml-pipeline-api:
+    image: quay.io/kubeflow-pipeline/api-server:1.10.0
+    ports:
+      - "8888:8888"
+    environment:
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: minio123
+      MINIO_BUCKET: mlpipeline
+      ARTIFACT_ROOT: "s3://mlpipeline/"
+      DB_CONFIG: '{"dbname":"metadb"}'
+    depends_on:
+      - minio
+
+  # -------------------------------------
+  # Kubeflow Pipelines UI (v1.10)
+  # -------------------------------------
+  ml-pipeline-ui:
+    image: quay.io/kubeflow-pipeline/frontend:1.10.0
+    ports:
+      - "3000:3000"
+    environment:
+      ML_PIPELINE_API_SERVER_URL: "http://ml-pipeline-api:8888"
+    depends_on:
+      - ml-pipeline-api
+
+  # -------------------------------------
+  # KFP Visualization Server
+  # -------------------------------------
+  ml-pipeline-visualization:
+    image: quay.io/kubeflow-pipeline/visualization-server:1.10.0
+    ports:
+      - "7001:7000"
+    depends_on:
+      - ml-pipeline-api
+
+  # -------------------------------------
+  # Prometheus
+  # -------------------------------------
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
 
+  # -------------------------------------
+  # Grafana
+  # -------------------------------------
   grafana:
     image: grafana/grafana:9.0.0
     ports:
@@ -56,15 +101,18 @@ services:
     depends_on:
       - prometheus
 
+  # -------------------------------------
+  # Jaeger
+  # -------------------------------------
   jaeger:
     image: jaegertracing/all-in-one:1.41
     ports:
       - "16686:16686"
       - "6831:6831/udp"
 
-  # ------------------------
-  # Your application services
-  # ------------------------
+  # -------------------------------------
+  # Fraud Analyzer (FastAPI)
+  # -------------------------------------
   fraud-analyzer:
     build: ./services/fraud_analyzer
     ports:
@@ -79,6 +127,9 @@ services:
       - kafka
       - minio
 
+  # -------------------------------------
+  # Transaction Ingestor (Quarkus)
+  # -------------------------------------
   transaction-ingestor:
     build: ./services/transaction_ingestor
     ports:
@@ -88,64 +139,21 @@ services:
     depends_on:
       - kafka
 
+  # -------------------------------------
+  # Rule Engine (Go)
+  # -------------------------------------
   rule-engine:
     build: ./services/rule_engine
     ports:
       - "7000:7000"
 
+  # -------------------------------------
+  # Alert Service (NodeJS)
+  # -------------------------------------
   alert-service:
     build: ./services/alert_service
     ports:
       - "3001:3001"
-
-  # ------------------------
-  # Kubeflow Pipelines GHCR images (without UI)
-  # ------------------------
-  ml-pipeline-api:
-    image: ghcr.io/kubeflow/kfp-api-server:2.14.3
-    ports:
-      - "8888:8888"
-    environment:
-      MINIO_ENDPOINT: minio:9000
-      MINIO_ACCESS_KEY: minio
-      MINIO_SECRET_KEY: minio123
-      MINIO_BUCKET: fraudshield
-    depends_on:
-      - minio
-
-  ml-pipeline-persistenceagent:
-    image: ghcr.io/kubeflow/kfp-persistence-agent:2.14.3
-    depends_on:
-      - ml-pipeline-api
-
-  ml-pipeline-scheduledworkflow:
-    image: ghcr.io/kubeflow/kfp-scheduled-workflow-controller:2.5.0
-    depends_on:
-      - ml-pipeline-api
-
-  ml-pipeline-metadata-envoy:
-    image: ghcr.io/kubeflow/kfp-metadata-envoy:2.14.3
-    depends_on:
-      - ml-pipeline-api
-
-  ml-pipeline-metadata-server:
-    image: ghcr.io/kubeflow/kfp-metadata-writer:2.14.3
-    depends_on:
-      - ml-pipeline-metadata-envoy
-
-  ml-pipeline-frontend:
-    image: ghcr.io/kubeflow/kfp-frontend:2.14.3
-    ports:
-      - "3000:3000"
-    environment:
-      - VITE_API_SERVER=http://ml-pipeline-api:8888
-    depends_on:
-      - ml-pipeline-api
-
-  ml-pipeline-visualization:
-    image: ghcr.io/kubeflow/kfp-visualization-server:2.5.0
-    depends_on:
-      - ml-pipeline-api
 
 volumes:
   minio_data:
