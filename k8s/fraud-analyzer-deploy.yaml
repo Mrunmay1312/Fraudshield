@@ -22,3 +22,5 @@ spec:
         env:
         - name: MODEL_PATH
           value: /app/model.joblib
+        - name: KAFKA_BOOTSTRAP
+          value: kafka:9092

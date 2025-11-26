@@ -1,0 +1,52 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: fraudshield-ci-pipeline
+spec:
+  workspaces:
+    - name: shared-workspace
+  params:
+    - name: repo-url
+      type: string
+    - name: revision
+      type: string
+      default: "main"
+    - name: image-url
+      type: string
+    - name: manifest
+      type: string
+  tasks:
+    - name: clone-source
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.repo-url)
+        - name: revision
+          value: $(params.revision)
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+
+    - name: build-image
+      runAfter: ["clone-source"]
+      taskRef:
+        name: build-and-push
+      params:
+        - name: image-url
+          value: $(params.image-url)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    - name: deploy
+      runAfter: ["build-image"]
+      taskRef:
+        name: deploy-k8s
+      params:
+        - name: manifest
+          value: $(params.manifest)
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+

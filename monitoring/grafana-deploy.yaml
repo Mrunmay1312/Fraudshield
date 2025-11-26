@@ -3,6 +3,8 @@ kind: Deployment
 metadata:
   name: grafana
   namespace: monitoring
+  labels:
+    app: grafana
 spec:
   replicas: 1
   selector:
@@ -10,20 +12,12 @@ spec:
       app: grafana
   template:
     metadata:
-      labels: { app: grafana }
+      labels:
+        app: grafana
     spec:
       containers:
         - name: grafana
           image: grafana/grafana:9.0.0
-          ports: [{containerPort: 3000}]
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: grafana
-  namespace: monitoring
-spec:
-  selector: { app: grafana }
-  ports:
-    - port: 3000
-      targetPort: 3000
+          ports:
+            - containerPort: 3000
+

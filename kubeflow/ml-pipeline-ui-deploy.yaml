@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ml-pipeline-ui
+  namespace: kubeflow
+  labels:
+    app: ml-pipeline-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ml-pipeline-ui
+  template:
+    metadata:
+      labels:
+        app: ml-pipeline-ui
+    spec:
+      containers:
+        - name: ml-pipeline-ui
+          image: gcr.io/ml-pipeline/ui:1.10.0
+          ports:
+            - containerPort: 3000
+          env:
+            - name: PIPELINE_API_SERVER
+              value: http://ml-pipeline.kubeflow.svc.cluster.local:8888
+

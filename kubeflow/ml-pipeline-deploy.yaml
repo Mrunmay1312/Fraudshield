@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ml-pipeline
+  namespace: kubeflow
+  labels:
+    app: ml-pipeline
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ml-pipeline
+  template:
+    metadata:
+      labels:
+        app: ml-pipeline
+    spec:
+      containers:
+        - name: ml-pipeline
+          image: gcr.io/ml-pipeline/api-server:1.10.0  # POC image; check upstream for versions
+          ports:
+            - containerPort: 8888
+          env:
+            - name: MINIO_ENDPOINT
+              value: minio.kubeflow.svc.cluster.local:9000
+            - name: MINIO_ACCESS_KEY
+              value: minio
+            - name: MINIO_SECRET_KEY
+              value: minio123
+

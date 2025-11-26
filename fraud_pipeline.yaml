@@ -1,0 +1,69 @@
+# PIPELINE DEFINITION
+# Name: fraud-detection-pipeline
+# Description: End-to-end fraud model training pipeline
+components:
+  comp-evaluate-op:
+    executorLabel: exec-evaluate-op
+  comp-preprocess-op:
+    executorLabel: exec-preprocess-op
+  comp-train-op:
+    executorLabel: exec-train-op
+deploymentSpec:
+  executors:
+    exec-evaluate-op:
+      container:
+        args:
+        - print('Evaluation step executed')
+        command:
+        - python
+        - -c
+        image: python:3.9
+    exec-preprocess-op:
+      container:
+        args:
+        - print('Preprocessing step executed')
+        command:
+        - python
+        - -c
+        image: python:3.9
+    exec-train-op:
+      container:
+        args:
+        - print('Training step executed')
+        command:
+        - python
+        - -c
+        image: python:3.9
+pipelineInfo:
+  description: End-to-end fraud model training pipeline
+  name: fraud-detection-pipeline
+root:
+  dag:
+    tasks:
+      evaluate-op:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-evaluate-op
+        dependentTasks:
+        - train-op
+        taskInfo:
+          name: evaluate-op
+      preprocess-op:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-preprocess-op
+        taskInfo:
+          name: preprocess-op
+      train-op:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-train-op
+        dependentTasks:
+        - preprocess-op
+        taskInfo:
+          name: train-op
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.14.6

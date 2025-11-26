@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: rule-engine
+  namespace: fraudshield
   labels:
     app: rule-engine
 spec:
@@ -11,4 +12,5 @@ spec:
     - port: 8080
       targetPort: 8080
       protocol: TCP
+  type: ClusterIP
 

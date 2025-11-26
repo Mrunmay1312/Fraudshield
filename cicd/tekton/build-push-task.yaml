@@ -1,0 +1,30 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: build-and-push
+spec:
+  params:
+    - name: image-url
+      type: string
+    - name: dockerfile
+      type: string
+      default: Dockerfile
+    - name: context
+      type: string
+      default: .
+  workspaces:
+    - name: source
+  steps:
+    - name: build
+      image: quay.io/buildah/stable
+      securityContext:
+        privileged: true
+      script: |
+        buildah bud -f $(params.dockerfile) -t $(params.image-url) $(workspaces.source.path)/$(params.context)
+    - name: push
+      image: quay.io/buildah/stable
+      securityContext:
+        privileged: true
+      script: |
+        buildah push $(params.image-url)
+

@@ -1,16 +1,15 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: alert-service
-  namespace: fraudshield
+  name: ml-pipeline-ui
+  namespace: kubeflow
   labels:
-    app: alert-service
+    app: ml-pipeline-ui
 spec:
   selector:
-    app: alert-service
+    app: ml-pipeline-ui
   ports:
     - port: 3000
       targetPort: 3000
-      protocol: TCP
   type: ClusterIP
 

@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: alert-service
-  namespace: fraudshield
+  name: grafana
+  namespace: monitoring
   labels:
-    app: alert-service
+    app: grafana
 spec:
   selector:
-    app: alert-service
+    app: grafana
   ports:
     - port: 3000
       targetPort: 3000

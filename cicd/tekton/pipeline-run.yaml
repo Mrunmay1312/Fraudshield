@@ -1,0 +1,25 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: fraudshield-ci-run
+spec:
+  pipelineRef:
+    name: fraudshield-ci-pipeline
+  workspaces:
+    - name: shared-workspace
+      volumeClaimTemplate:
+        metadata:
+          name: fraudshield-ws
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 1Gi
+  params:
+    - name: repo-url
+      value: "https://github.com/mrunmay1312/Fraudshield.git"
+    - name: image-url
+      value: "image-registry.openshift-image-registry.svc:5000/fraudshield/transaction-ingestor:latest"
+    - name: manifest
+      value: "k8s/transaction_ingestor/deployment.yaml"
+
