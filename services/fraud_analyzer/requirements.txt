@@ -6,3 +6,5 @@ joblib
 numpy
 pandas
 onnxruntime
+minio
+kafka-python

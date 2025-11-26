@@ -1,14 +1,12 @@
-FROM registry.access.redhat.com/ubi8/openjdk-17-runtime:1.17
+FROM maven:3.9.4-eclipse-temurin-17 AS build
 
+WORKDIR /build
+COPY . .
+RUN mvn -DskipTests package
+
+FROM eclipse-temurin:17
 WORKDIR /app
-
-# Copy Quarkus app structure
-COPY target/quarkus-app/lib/ /app/lib/
-COPY target/quarkus-app/app/ /app/app/
-COPY target/quarkus-app/quarkus/ /app/quarkus/
-COPY target/quarkus-app/quarkus-run.jar /app/
-
+COPY --from=build /build/target/*.jar app.jar
 EXPOSE 8080
-
-CMD ["java", "-jar", "/app/quarkus-run.jar"]
+CMD ["java", "-jar", "app.jar"]
 
