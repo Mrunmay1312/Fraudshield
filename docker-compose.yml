@@ -1,6 +1,9 @@
 version: "3.9"
 
 services:
+  # ------------------------
+  # Kafka stack
+  # ------------------------
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     environment:
@@ -21,6 +24,9 @@ services:
     ports:
       - "9094:9094"
 
+  # ------------------------
+  # MinIO for artifacts
+  # ------------------------
   minio:
     image: minio/minio
     command: server /data --console-address ":9001"
@@ -33,6 +39,9 @@ services:
     volumes:
       - minio_data:/data
 
+  # ------------------------
+  # Monitoring stack
+  # ------------------------
   prometheus:
     image: prom/prometheus:latest
     volumes:
@@ -43,7 +52,7 @@ services:
   grafana:
     image: grafana/grafana:9.0.0
     ports:
-      - "3000:3000"
+      - "3005:3000"
     depends_on:
       - prometheus
 
@@ -53,6 +62,9 @@ services:
       - "16686:16686"
       - "6831:6831/udp"
 
+  # ------------------------
+  # Your application services
+  # ------------------------
   fraud-analyzer:
     build: ./services/fraud_analyzer
     ports:
@@ -86,8 +98,11 @@ services:
     ports:
       - "3001:3001"
 
+  # ------------------------
+  # Kubeflow Pipelines GHCR images (without UI)
+  # ------------------------
   ml-pipeline-api:
-    image: gcr.io/ml-pipeline/api-server:1.10.0
+    image: ghcr.io/kubeflow/kfp-api-server:2.14.3
     ports:
       - "8888:8888"
     environment:
@@ -98,12 +113,37 @@ services:
     depends_on:
       - minio
 
-  ml-pipeline-ui:
-    image: gcr.io/ml-pipeline/ui:1.10.0
+  ml-pipeline-persistenceagent:
+    image: ghcr.io/kubeflow/kfp-persistence-agent:2.14.3
+    depends_on:
+      - ml-pipeline-api
+
+  ml-pipeline-scheduledworkflow:
+    image: ghcr.io/kubeflow/kfp-scheduled-workflow-controller:2.5.0
+    depends_on:
+      - ml-pipeline-api
+
+  ml-pipeline-metadata-envoy:
+    image: ghcr.io/kubeflow/kfp-metadata-envoy:2.14.3
+    depends_on:
+      - ml-pipeline-api
+
+  ml-pipeline-metadata-server:
+    image: ghcr.io/kubeflow/kfp-metadata-writer:2.14.3
+    depends_on:
+      - ml-pipeline-metadata-envoy
+
+  ml-pipeline-frontend:
+    image: ghcr.io/kubeflow/kfp-frontend:2.14.3
     ports:
-      - "3002:3000"
+      - "3000:3000"
     environment:
-      PIPELINE_API_SERVER: http://ml-pipeline-api:8888
+      - VITE_API_SERVER=http://ml-pipeline-api:8888
+    depends_on:
+      - ml-pipeline-api
+
+  ml-pipeline-visualization:
+    image: ghcr.io/kubeflow/kfp-visualization-server:2.5.0
     depends_on:
       - ml-pipeline-api
 
